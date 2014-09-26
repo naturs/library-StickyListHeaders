@@ -18,6 +18,8 @@ class WrapperViewList extends ListView {
 		void onDispatchDrawOccurred(Canvas canvas);
 	}
 
+	static final String LOG_TAG = "WrapperViewList";
+	
 	private LifeCycleListener mLifeCycleListener;
 	private List<View> mFooterViews;
 	private int mTopClippingLength;
@@ -96,6 +98,9 @@ class WrapperViewList extends ListView {
 		if (mTopClippingLength != 0) {
 			canvas.save();
 			Rect clipping = canvas.getClipBounds();
+			
+			L.d(LOG_TAG, "dispatchDraw clipping:%s", clipping);
+			
 			clipping.top = mTopClippingLength;
 			canvas.clipRect(clipping);
 			super.dispatchDraw(canvas);
@@ -112,20 +117,25 @@ class WrapperViewList extends ListView {
 
 	@Override
 	public void addFooterView(View v) {
+		System.out.println("add footer 1");
 		super.addFooterView(v);
-		addInternalFooterView(v);
+//		addInternalFooterView(v);
+		System.out.println("add footer 11");
 	}
 
 	@Override
 	public void addFooterView(View v, Object data, boolean isSelectable) {
+		System.out.println("add footer 2");
 		super.addFooterView(v, data, isSelectable);
 		addInternalFooterView(v);
+		System.out.println("add footer 22");
 	}
 
 	private void addInternalFooterView(View v) {
 		if (mFooterViews == null) {
 			mFooterViews = new ArrayList<View>();
 		}
+		System.out.println("add footer view:" + v);
 		mFooterViews.add(v);
 	}
 

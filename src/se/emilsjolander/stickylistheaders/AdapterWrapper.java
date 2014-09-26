@@ -20,7 +20,7 @@ import android.widget.ListAdapter;
  * and
  * {@link StickyListHeadersAdapter#getHeaderView(int, android.view.View, android.view.ViewGroup)}
  * appropriately.
- *
+ * 
  * @author Jake Wharton (jakewharton@gmail.com)
  */
 class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
@@ -42,15 +42,14 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 			mHeaderCache.clear();
 			AdapterWrapper.super.notifyDataSetInvalidated();
 		}
-		
+
 		@Override
 		public void onChanged() {
 			AdapterWrapper.super.notifyDataSetChanged();
 		}
 	};
 
-	AdapterWrapper(Context context,
-			StickyListHeadersAdapter delegate) {
+	AdapterWrapper(Context context, StickyListHeadersAdapter delegate) {
 		this.mContext = context;
 		this.mDelegate = delegate;
 		delegate.registerDataSetObserver(mDataSetObserver);
@@ -129,13 +128,14 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 		if (header == null) {
 			throw new NullPointerException("Header view must not be null.");
 		}
-		//if the header isn't clickable, the listselector will be drawn on top of the header
+		// if the header isn't clickable, the listselector will be drawn on top
+		// of the header
 		header.setClickable(true);
 		header.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				if(mOnHeaderClickListener != null){
+				if (mOnHeaderClickListener != null) {
 					long headerId = mDelegate.getHeaderId(position);
 					mOnHeaderClickListener.onHeaderClick(v, position, headerId);
 				}
@@ -145,17 +145,33 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 	}
 
 	private View popHeader() {
-		if(mHeaderCache.size() > 0) {
+		if (mHeaderCache.size() > 0) {
 			return mHeaderCache.remove(0);
 		}
 		return null;
 	}
 
-	/** Returns {@code true} if the previous position has the same header ID. */
+	/** 
+	 * Returns {@code true} if the previous position has the same header ID. 
+	 * <p>
+	 * 注意：每一个item都有headerId。该方法用来判断当前position处的item的headerId
+	 * 和前一个position处的item的headerId是否一样。如果一样，代表当前position处不
+	 * 需要显示header，否则需要显示header。
+	 * <pre>
+	 * 比如：
+	 * 0 Aa
+	 * 1 Ab
+	 * 2 Ac
+	 * 3 Ba
+	 * 4 Bb
+	 * 5 Bc
+	 * </pre>
+	 * 0位置显示header为A，1位置和2位置就不需要了，3位置和2位置的headerId不一样，需要
+	 * 显示一个header。
+	 * </p>
+	 */
 	private boolean previousPositionHasSameHeader(int position) {
-		return position != 0
-				&& mDelegate.getHeaderId(position) == mDelegate
-						.getHeaderId(position - 1);
+		return position != 0 && mDelegate.getHeaderId(position) == mDelegate.getHeaderId(position - 1);
 	}
 
 	@Override
@@ -168,23 +184,24 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 		} else {
 			header = configureHeader(wv, position);
 		}
-		if((item instanceof Checkable) && !(wv instanceof CheckableWrapperView)) {
-			// Need to create Checkable subclass of WrapperView for ListView to work correctly
+		if ((item instanceof Checkable) && !(wv instanceof CheckableWrapperView)) {
+			// Need to create Checkable subclass of WrapperView for ListView to
+			// work correctly
 			wv = new CheckableWrapperView(mContext);
-		} else if(!(item instanceof Checkable) && (wv instanceof CheckableWrapperView)) {
+		} else if (!(item instanceof Checkable) && (wv instanceof CheckableWrapperView)) {
 			wv = new WrapperView(mContext);
 		}
 		wv.update(item, header, mDivider, mDividerHeight);
 		return wv;
 	}
 
-	public void setOnHeaderClickListener(OnHeaderClickListener onHeaderClickListener){
+	public void setOnHeaderClickListener(OnHeaderClickListener onHeaderClickListener) {
 		this.mOnHeaderClickListener = onHeaderClickListener;
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		return mDelegate.equals(o); 
+		return mDelegate.equals(o);
 	}
 
 	@Override

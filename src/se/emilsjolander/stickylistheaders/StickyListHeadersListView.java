@@ -128,8 +128,7 @@ public class StickyListHeadersListView extends FrameLayout {
 		// Initialize the wrapped list
 		mList = new WrapperViewList(context);
 
-		// null out divider, dividers are handled by adapter so they look good
-		// with headers
+		// null out divider, dividers are handled by adapter so they look good with headers
 		mDivider = mList.getDivider();
 		mDividerHeight = mList.getDividerHeight();
 		mList.setDivider(null);
@@ -309,7 +308,7 @@ public class StickyListHeadersListView extends FrameLayout {
 		if (adapterCount == 0 || !mAreHeadersSticky) {
 			return;
 		}
-
+		
 		final int headerViewCount = mList.getHeaderViewsCount();
 		int headerPosition = firstVisiblePosition - headerViewCount;
 		if (mList.getChildCount() > 0) {

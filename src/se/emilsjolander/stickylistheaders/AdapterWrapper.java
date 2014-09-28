@@ -29,6 +29,8 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 		void onHeaderClick(View header, int itemPosition, long headerId);
 	}
 
+	static final String LOG_TAG = "AdapterWrapper";
+	
 	final StickyListHeadersAdapter mDelegate;
 	private final List<View> mHeaderCache = new LinkedList<View>();
 	private final Context mContext;
@@ -115,7 +117,20 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 			// reset the headers visibility when adding it to the cache
 			header.setVisibility(View.VISIBLE);
 			mHeaderCache.add(header);
+			
+			L.w(LOG_TAG, "Cache header. size=%d", mHeaderCache.size());
 		}
+	}
+	
+	private View popHeader() {
+		View header = null;
+		if (mHeaderCache.size() > 0) {
+			header = mHeaderCache.remove(0);
+		}
+		
+		L.w(LOG_TAG, "Pop   header. header=%s", header);
+		
+		return header;
 	}
 
 	/**
@@ -124,6 +139,7 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 	 */
 	private View configureHeader(WrapperView wv, final int position) {
 		View header = wv.mHeader == null ? popHeader() : wv.mHeader;
+		// 如果header==null，在我们自己写的adapter中就需要重新创建一个header出来
 		header = mDelegate.getHeaderView(position, header, wv);
 		if (header == null) {
 			throw new NullPointerException("Header view must not be null.");
@@ -142,13 +158,6 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 			}
 		});
 		return header;
-	}
-
-	private View popHeader() {
-		if (mHeaderCache.size() > 0) {
-			return mHeaderCache.remove(0);
-		}
-		return null;
 	}
 
 	/** 
@@ -178,12 +187,34 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 	public WrapperView getView(int position, View convertView, ViewGroup parent) {
 		WrapperView wv = (convertView == null) ? new WrapperView(mContext) : (WrapperView) convertView;
 		View item = mDelegate.getView(position, wv.mItem, parent);
+		
+		L.v(LOG_TAG, "convertView == null ? %s, wv.mHeader == null ? %s.", convertView == null, wv.mHeader == null);
+		
+		//===================缓存或者创建新的header（每个item的header）=====================//
+		
 		View header = null;
+		// 当前item自己不需要header
 		if (previousPositionHasSameHeader(position)) {
+			/*
+			 * 这里的真实意义是缓存一个header：
+			 * 当一个item被重用时，如果这个item是带有header的item（即header!=null），那么把这个header保存起来。
+			 */
 			recycleHeaderIfExists(wv);
 		} else {
+			/*
+			 * 这里是创建一个新的header（当需要创建新的header的时候）：
+			 * 注意这里创建新的header的时候，首先会判断缓存中有没有header，如果有就把这个header拿出来使用，否则
+			 * 就要创建新的。
+			 * 该功能的实现依赖于ListView自身的item缓存实现。
+			 */
 			header = configureHeader(wv, position);
 		}
+		
+		// 由于每个页面可能显示的header的个数不一样，所以缓存的个数也会发生变化，这里不像ListView，每一页显示的
+		// item个数都是固定的。缓存中的header就是被创建过的，但是已经不用了的对象。
+		
+		//===================缓存或者创建新的header（每个item的header）=====================//
+		
 		if ((item instanceof Checkable) && !(wv instanceof CheckableWrapperView)) {
 			// Need to create Checkable subclass of WrapperView for ListView to
 			// work correctly
@@ -192,6 +223,9 @@ class AdapterWrapper extends BaseAdapter implements StickyListHeadersAdapter {
 			wv = new WrapperView(mContext);
 		}
 		wv.update(item, header, mDivider, mDividerHeight);
+		
+		L.d(LOG_TAG, "Get view: position=%d, header.visibility=%s.", position, Util.getVisibilityStr(header));
+		
 		return wv;
 	}
 

@@ -48,18 +48,22 @@ public class WrapperView extends ViewGroup {
 
 		// only remove the current item if it is not the same as the new item.
 		// this can happen if wrapping a recycled view
-		if (this.mItem != item) {
+		if (this.mItem != item) { // 如果WrapperView被重用的时候，传进来的item和它自己的item就是一样的
 			removeView(this.mItem);
 			this.mItem = item;
+			
+			// XXX:其实下面这段没必要
 			final ViewParent parent = item.getParent();
 			if (parent != null && parent != this) {
 				if (parent instanceof ViewGroup) {
 					((ViewGroup) parent).removeView(item);
 				}
 			}
+			
 			addView(item);
 		}
 
+		
 		// same logik as above but for the header
 		if (this.mHeader != header) {
 			if (this.mHeader != null) {
@@ -67,6 +71,19 @@ public class WrapperView extends ViewGroup {
 			}
 			this.mHeader = header;
 			if (header != null) {
+				/*
+				 * 这里能够保证header的parent是null。
+				 * 
+				 * 1. 如果header是新创建的就不用说了。
+				 * 
+				 * 2. 如果header是从缓存中拿出来的，当它被加到缓存中的时候，
+				 * 代表ListView的那个item（即某一个WrapperView）带有header，
+				 * 并且那个item不需要header，所以当它update的时候就传进来
+				 * null，根据上面的两个if语句，header就被移除了。
+				 * 
+				 * 也就是说，header被缓存的时候，它所在的WrapperView就已经
+				 * 将它remove掉了。
+				 */
 				addView(header);
 			}
 		}

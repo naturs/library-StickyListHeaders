@@ -25,7 +25,13 @@ class DistinctMultiHashMap<TKey, TItemValue> {
 		public TItemValue valueIdToValue(Object valueId);
 	}
 
+	/**
+	 * key -> values
+	 */
 	LinkedHashMap<Object, List<TItemValue>> mKeyToValuesMap = new LinkedHashMap<Object, List<TItemValue>>();
+	/**
+	 * value -> key
+	 */
 	LinkedHashMap<Object, TKey> mValueToKeyIndexer = new LinkedHashMap<Object, TKey>();
 
 	DistinctMultiHashMap() {
@@ -35,6 +41,7 @@ class DistinctMultiHashMap<TKey, TItemValue> {
 				return key;
 			}
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public TKey keyIdToKey(Object keyId) {
 				return (TKey) keyId;
@@ -45,6 +52,7 @@ class DistinctMultiHashMap<TKey, TItemValue> {
 				return value;
 			}
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public TItemValue valueIdToValue(Object valueId) {
 				return (TItemValue) valueId;
@@ -71,8 +79,8 @@ class DistinctMultiHashMap<TKey, TItemValue> {
 			mKeyToValuesMap.put(keyId, new ArrayList<TItemValue>());
 		}
 		// remove old relationship
-		TKey keyForValue = getKey(value);
-		if (keyForValue != null) {
+		TKey keyForValue = getKey(value); // value -> key
+		if (keyForValue != null) { // value被添加过
 			mKeyToValuesMap.get(mIDMapper.keyToKeyId(keyForValue)).remove(value);
 		}
 		mValueToKeyIndexer.put(mIDMapper.valueToValueId(value), key);

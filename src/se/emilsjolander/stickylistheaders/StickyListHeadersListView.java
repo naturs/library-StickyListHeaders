@@ -317,13 +317,18 @@ public class StickyListHeadersListView extends FrameLayout {
 				headerPosition++;
 			}
 		}
+		
+		L.d(LOG_TAG, "firstVisiblePosition:%d, headerPosition:%d, stickyHeaderTop:%d.", firstVisiblePosition, headerPosition, stickyHeaderTop());
 
 		// It is not a mistake to call getFirstVisiblePosition() here.
 		// Most of the time getFixedFirstVisibleItem() should be called
 		// but that does not work great together with getChildAt()
 		final boolean doesListHaveChildren = mList.getChildCount() != 0;
+		
+		// 
 		final boolean isFirstViewBelowTop = doesListHaveChildren && mList.getFirstVisiblePosition() == 0
 				&& mList.getChildAt(0).getTop() >= stickyHeaderTop();
+
 		final boolean isHeaderPositionOutsideAdapterRange = headerPosition > adapterCount - 1 || headerPosition < 0;
 		if (!doesListHaveChildren || isHeaderPositionOutsideAdapterRange || isFirstViewBelowTop) {
 			clearHeader();
@@ -376,6 +381,8 @@ public class StickyListHeadersListView extends FrameLayout {
 			}
 		}
 
+		L.i(LOG_TAG, "Set header offset:%d.", headerOffset);
+		
 		setHeaderOffet(headerOffset);
 
 		if (!mIsDrawingListUnderStickyHeader) {
@@ -508,10 +515,6 @@ public class StickyListHeadersListView extends FrameLayout {
 					canvas.save();
 					canvas.clipRect(0, mPaddingTop, getRight(), getBottom());
 					drawChild(canvas, mHeader, 0);
-					
-					L.d(LOG_TAG, "canvas clipRect:%s", canvas.getClipBounds());
-					System.out.println("canvas clipRect:"+canvas.getClipBounds());
-					
 					canvas.restore();
 				} else {
 					drawChild(canvas, mHeader, 0);
